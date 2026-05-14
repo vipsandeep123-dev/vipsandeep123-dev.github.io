@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>THE EXAM | by Sandeep</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;outline:none;margin:0;padding:0;}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:#f0f2f5;color:#1a1a2e;overflow-x:hidden;}
+body{padding-bottom:80px;}
+:root{--p:#1a1a2e;--a:#e94560;--go:#f5a623;--gr:#00c9a7;--da:#ef4444;--mu:#8892a4;--bd:#e8eaf0;--gd:linear-gradient(135deg,#1a1a2e,#0f3460);}
+
+/* LOADER */
+#ldr{position:fixed;inset:0;background:#1a1a2e;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s;}
+#ldr.hide{opacity:0;pointer-events:none;}
+.sp{width:38px;height:38px;border:3px solid rgba(255,255,255,.12);border-top-color:#e94560;border-radius:50%;animation:sp .8s linear infinite;margin-bottom:22px;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.ll{font-family:'Syne',sans-serif;font-size:2.8rem;font-weight:800;color:#fff;letter-spacing:-2px;}
+.ll b{color:#e94560;}
+.ls{font-size:.7rem;color:rgba(255,255,255,.3);letter-spacing:3px;text-transform:uppercase;margin-top:6px;}
+
+/* AUTH — shown by default, JS hides it */
+#auth{position:fixed;inset:0;background:var(--gd);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9998;overflow-y:auto;}
+#auth.hidden{display:none !important;}
+.ac{background:#fff;border-radius:28px;padding:38px 28px;width:100%;max-width:400px;box-shadow:0 30px 80px rgba(0,0,0,.35);}
+.al{text-align:center;margin-bottom:26px;}
+.al .big{font-family:'Syne',sans-serif;font-size:2.8rem;font-weight:800;color:#1a1a2e;letter-spacing:-2px;display:block;}
+.al .big b{color:#e94560;}
+.al .by{font-size:.7rem;color:var(--mu);letter-spacing:4px;text-transform:uppercase;margin-top:4px;display:block;}
+.atabs{display:flex;background:#f1f3f8;border-radius:12px;padding:4px;margin-bottom:20px;}
+.atab{flex:1;padding:10px;border:none;background:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;color:var(--mu);}
+.atab.on{background:#fff;color:#1a1a2e;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.inp{width:100%;padding:14px 16px;border-radius:12px;border:1.5px solid var(--bd);margin-bottom:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;color:#1a1a2e;background:#fafbfc;}
+.inp:focus{border-color:#1a1a2e;outline:none;}
+.ebtn{width:100%;padding:14px;border-radius:12px;border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;background:var(--gd);color:#fff;}
+.emsg{background:#fee2e2;color:#ef4444;font-size:.82rem;font-weight:600;padding:10px 14px;border-radius:10px;margin-bottom:12px;display:none;line-height:1.5;}
+.afoot{text-align:center;font-size:.78rem;color:var(--mu);margin-top:14px;}
+
+/* HEADER */
+#hdr{background:#1a1a2e;padding:13px 5%;display:none;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:500;box-shadow:0 2px 20px rgba(0,0,0,.3);}
+#hdr.show{display:flex;}
+.brand{font-family:'Syne',sans-serif;font-weight:800;color:#fff;font-size:1.45rem;letter-spacing:-1px;cursor:pointer;}
+.brand b{color:#e94560;}
+.bsub{font-size:.56rem;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:3px;margin-top:1px;}
+.hb{padding:7px 13px;border-radius:8px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:rgba(255,255,255,.75);font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;font-size:.8rem;}
+
+/* BOTTOM TABS */
+#tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--bd);display:none;justify-content:space-around;padding:10px 0 16px;z-index:499;}
+#tabs.show{display:flex;}
+.tb{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:0 12px;}
+.tb i{font-size:1.1rem;color:var(--mu);}
+.tb span{font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mu);}
+.tb.on i,.tb.on span{color:#1a1a2e;}
+
+/* PAGES */
+.pg{display:none;min-height:90vh;padding:20px 5%;}
+.pg.on{display:block;}
+
+/* HERO */
+.hero{background:var(--gd);border-radius:24px;padding:26px;margin-bottom:16px;color:#fff;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-30px;right:-30px;width:130px;height:130px;background:rgba(255,255,255,.05);border-radius:50%;}
+.hg{font-size:.7rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;}
+.hn{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;letter-spacing:-.5px;margin-bottom:18px;line-height:1.1;}
+.hstats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.hs{background:rgba(255,255,255,.12);border-radius:14px;padding:12px 8px;text-align:center;}
+.hsv{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#f5a623;}
+.hsl{font-size:.5rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+
+/* LIVE BAR */
+.lbar{border-radius:18px;padding:15px 18px;margin-bottom:16px;color:#fff;display:flex;align-items:center;gap:12px;cursor:pointer;background:linear-gradient(135deg,#e94560,#c0392b);}
+.lbar.on{background:linear-gradient(135deg,#00c9a7,#009e83);}
+.ldot{width:10px;height:10px;border-radius:50%;background:#fff;animation:ld 1s infinite;flex-shrink:0;}
+@keyframes ld{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.5);}}
+.ltitle{font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;}
+.lsub{font-size:.72rem;opacity:.8;margin-top:2px;}
+.lcd{font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;background:rgba(0,0,0,.2);padding:5px 10px;border-radius:8px;flex-shrink:0;white-space:nowrap;}
+
+.stitle{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;color:#1a1a2e;margin:16px 0 12px;text-transform:uppercase;letter-spacing:1px;}
+
+/* CAT GRID */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.ccard{background:#fff;border-radius:20px;padding:18px 12px;text-align:center;cursor:pointer;border:1.5px solid var(--bd);position:relative;overflow:hidden;}
+.ccard::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--gd);}
+.ccard:active{opacity:.8;}
+.cicon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:1.2rem;}
+.cname{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;}
+.cct{font-size:.65rem;color:var(--mu);margin-top:3px;}
+
+/* BATCH */
+.bbtn{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--bd);border-radius:12px;padding:10px 16px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.85rem;cursor:pointer;margin-bottom:18px;color:#1a1a2e;}
+.bcard{background:#fff;border-radius:18px;padding:16px;margin-bottom:10px;cursor:pointer;border:1.5px solid var(--bd);display:flex;align-items:center;gap:14px;}
+.bcard:active{border-color:#1a1a2e;}
+.bnum{width:44px;height:44px;border-radius:12px;background:var(--gd);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#fff;flex-shrink:0;}
+.btitle{font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;}
+.bmeta{font-size:.68rem;color:var(--mu);margin-top:3px;}
+.badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:.62rem;font-weight:700;}
+.bg{background:#e6faf6;color:#00c9a7;}.bb{background:#eff6ff;color:#3b82f6;}.br{background:#fee2e2;color:#ef4444;}
+
+/* QUIZ */
+.qwrap{background:#fff;border-radius:24px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,.06);}
+.qtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.qlbl{font-family:'Syne',sans-serif;font-weight:800;font-size:.88rem;color:var(--mu);}
+.qsn{font-size:.64rem;color:var(--mu);font-weight:600;text-align:center;flex:1;padding:0 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.qtmr{background:#fee2e2;color:#ef4444;font-family:'Syne',sans-serif;font-weight:800;padding:6px 12px;border-radius:10px;font-size:.9rem;}
+.qtmr.warn{animation:pw 1s infinite;}
+@keyframes pw{0%,100%{opacity:1;}50%{opacity:.3;}}
+.prog{height:4px;background:#f1f3f8;border-radius:2px;margin-bottom:14px;overflow:hidden;}
+.pf{height:100%;background:var(--gd);border-radius:2px;transition:width .3s;}
+.pal{display:flex;overflow-x:auto;gap:6px;padding:8px 0;scrollbar-width:none;margin-bottom:14px;}
+.pal::-webkit-scrollbar{display:none;}
+.pn{min-width:34px;height:34px;border-radius:8px;background:#f1f3f8;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;flex-shrink:0;font-size:.78rem;color:var(--mu);}
+.pn.cur{outline:2.5px solid #1a1a2e;outline-offset:2px;}
+.pn.ans{background:#00c9a7;color:#fff;}
+.pn.rev{background:#8b5cf6;color:#fff;}
+.qtxt{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;line-height:1.5;margin-bottom:16px;}
+.opt{padding:13px 15px;border:1.5px solid var(--bd);border-radius:14px;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:12px;margin-bottom:9px;background:#fafbfc;}
+.opt.sel{border-color:#1a1a2e;background:#eef2ff;color:#1a1a2e;}
+.olt{width:26px;height:26px;border-radius:7px;background:#e8eaf0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.78rem;flex-shrink:0;}
+.opt.sel .olt{background:#1a1a2e;color:#fff;}
+.qbtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;margin-top:16px;}
+.qb{padding:9px 14px;border-radius:11px;border:1.5px solid var(--bd);background:#fff;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:6px;}
+.qbd{color:#ef4444;border-color:#fecaca;}
+.qbr{color:#8b5cf6;border-color:#ddd6fe;}
+.qbp{background:var(--gd);color:#fff;border-color:transparent;}
+.subbtn{width:100%;padding:15px;border-radius:14px;border:none;background:linear-gradient(135deg,#00c9a7,#00a58e);color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;cursor:pointer;margin-top:14px;}
+
+/* RESULTS */
+.rhero{background:var(--gd);border-radius:24px;padding:28px;text-align:center;margin-bottom:18px;color:#fff;}
+.rscore{font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;letter-spacing:-2px;color:#f5a623;}
+.rlbl{font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.5);margin-bottom:12px;}
+.rstats{display:flex;gap:10px;justify-content:center;margin-top:14px;}
+.rs{background:rgba(255,255,255,.12);border-radius:12px;padding:10px 14px;text-align:center;}
+.rsv{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;}
+.rsl{font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.5);margin-top:2px;}
+.acard{background:#fff;border-radius:16px;padding:15px;margin-bottom:10px;border-left:4px solid #00c9a7;}
+.acard.w{border-left-color:#ef4444;}
+.aq{font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;margin-bottom:7px;line-height:1.4;}
+.ac{font-size:.78rem;color:#065f46;font-weight:600;}
+.am{font-size:.78rem;color:#ef4444;font-weight:600;}
+.ae{font-size:.72rem;color:var(--mu);margin-top:4px;line-height:1.5;}
+
+/* LB */
+.lbc{background:#fff;border-radius:16px;padding:15px;margin-bottom:10px;display:flex;align-items:center;gap:14px;border:1.5px solid var(--bd);}
+.lbc.me{border-color:#1a1a2e;background:#f8f8ff;}
+.lbr{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;flex-shrink:0;}
+.r1{background:linear-gradient(135deg,#f5a623,#e8940a);color:#fff;}
+.r2{background:linear-gradient(135deg,#94a3b8,#64748b);color:#fff;}
+.r3{background:linear-gradient(135deg,#cd7f32,#a0522d);color:#fff;}
+.ro{background:#f1f3f8;color:var(--mu);}
+
+/* HIST */
+.hc{background:#fff;border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;border:1.5px solid var(--bd);}
+.hci{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+
+/* ADMIN */
+.abox{background:#fff;border-radius:20px;overflow:hidden;margin-bottom:14px;}
+.arow{padding:15px 16px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;}
+.arow:last-child{border-bottom:none;}
+.sbox{background:#fff;border-radius:20px;padding:20px;margin-bottom:16px;border:2px dashed var(--bd);}
+
+/* EMPTY / TOAST */
+.empty{text-align:center;padding:40px 20px;color:var(--mu);}
+.empty i{font-size:2.5rem;margin-bottom:12px;display:block;opacity:.3;}
+.empty p{font-size:.83rem;line-height:1.7;}
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:11px 20px;border-radius:12px;font-size:.82rem;font-weight:600;z-index:99999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+#toast.on{opacity:1;}
+
+/* ── POPUPS ── */
+.pop-ov{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:8000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);}
+.pop-ov.hide{display:none;}
+.pop-card{background:#fff;border-radius:24px;padding:28px 22px;width:100%;max-width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:popIn .3s ease;}
+@keyframes popIn{from{transform:scale(.88);opacity:0;}to{transform:scale(1);opacity:1;}}
+.pop-icon{font-size:2.8rem;margin-bottom:10px;}
+.pop-title{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:#1a1a2e;margin-bottom:6px;}
+.pop-text{font-size:.82rem;color:var(--mu);line-height:1.6;margin-bottom:16px;}
+.pop-go{display:block;width:100%;padding:13px;border-radius:12px;border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;cursor:pointer;margin-bottom:8px;text-decoration:none;color:#fff;}
+.pop-skip{display:block;width:100%;padding:10px;border-radius:12px;border:none;background:#f1f3f8;color:var(--mu);font-family:'DM Sans',sans-serif;font-weight:600;font-size:.85rem;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- LOADER (shown on start) -->
+<div id="ldr">
+  <div class="sp"></div>
+  <div class="ll">THE <b>EXAM</b></div>
+  <div class="ls">by Sandeep</div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- AUTH (shown by default until user logs in) -->
+<div id="auth">
+  <div class="ac">
+    <div class="al">
+      <span class="big">THE <b>EXAM</b></span>
+      <span class="by">by Sandeep</span>
+    </div>
+    <div class="atabs">
+      <button class="atab on" id="tli" onclick="switchTab('login')">Login</button>
+      <button class="atab" id="tre" onclick="switchTab('reg')">Register</button>
+    </div>
+    <div class="emsg" id="emsg"></div>
+    <div id="fli">
+      <input class="inp" type="email" id="le" placeholder="Email Address" autocomplete="email">
+      <input class="inp" type="password" id="lp" placeholder="Password" autocomplete="current-password">
+      <button class="ebtn" onclick="doLogin()">Login &rarr;</button>
+    </div>
+    <div id="fre" style="display:none">
+      <input class="inp" type="text" id="rn" placeholder="Full Name" autocomplete="name">
+      <input class="inp" type="email" id="re" placeholder="Email Address" autocomplete="email">
+      <input class="inp" type="password" id="rp" placeholder="Password (min 6 chars)" autocomplete="new-password">
+      <button class="ebtn" onclick="doReg()">Create Account &rarr;</button>
+    </div>
+    <div class="afoot">&#128274; Secured with Firebase Authentication</div>
+  </div>
+</div>
+
+<!-- HEADER (hidden until login) -->
+<div id="hdr">
+  <div onclick="goHome()" style="cursor:pointer">
+    <div class="brand">THE <b>EXAM</b></div>
+    <div class="bsub">by Sandeep</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button id="admbtn" style="display:none" class="hb" onclick="openAdmin()">
+      <i class="fa-solid fa-shield-halved"></i>
+    </button>
+    <button class="hb" onclick="doLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+  </div>
+</div>
+
+<!-- BOTTOM TABS (hidden until login) -->
+<div id="tabs">
+  <div class="tb on" id="tb0" onclick="goHome()"><i class="fa-solid fa-house"></i><span>Home</span></div>
+  <div class="tb" id="tb1" onclick="openLive()"><i class="fa-solid fa-bolt"></i><span>Live</span></div>
+  <div class="tb" id="tb2" onclick="openLB()"><i class="fa-solid fa-trophy"></i><span>Ranks</span></div>
+  <div class="tb" id="tb3" onclick="openHist()"><i class="fa-solid fa-clock-rotate-left"></i><span>History</span></div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="pg on" id="pg-dash">
+  <div class="hero">
+    <div class="hg" id="hg">Good Morning</div>
+    <div class="hn" id="hn">Student</div>
+    <div class="hstats">
+      <div class="hs"><div class="hsv" id="sacc">—</div><div class="hsl">Accuracy</div></div>
+      <div class="hs"><div class="hsv" id="stests">—</div><div class="hsl">Tests Done</div></div>
+      <div class="hs"><div class="hsv" id="sbest">—</div><div class="hsl">Best Score</div></div>
+    </div>
+  </div>
+  <div class="lbar" id="lbar" onclick="openLive()">
+    <div class="ldot"></div>
+    <div style="flex:1"><div class="ltitle">&#9889; Daily Live Quiz</div><div class="lsub" id="lsub">Every day at 9:00 AM &bull; 30 Questions</div></div>
+    <div class="lcd" id="lcd">--:--</div>
+  </div>
+  <div class="stitle">&#128218; Select Subject</div>
+  <div class="cgrid" id="cgrid"></div>
+</div>
+
+<!-- BATCH -->
+<div class="pg" id="pg-bat">
+  <button class="bbtn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+  <div class="stitle" id="battitle">Tests</div>
+  <div id="batlist"></div>
+</div>
+
+<!-- QUIZ -->
+<div class="pg" id="pg-qz" style="padding:14px 4%">
+  <div class="qwrap">
+    <div class="qtop">
+      <span class="qlbl" id="qlbl">Q1/30</span>
+      <span class="qsn" id="qsn"></span>
+      <span class="qtmr" id="qtmr">20:00</span>
+    </div>
+    <div class="prog"><div class="pf" id="qpf"></div></div>
+    <div class="pal" id="qpal"></div>
+    <div class="qtxt" id="qtxt"></div>
+    <div id="qopts"></div>
+    <div class="qbtns">
+      <div style="display:flex;gap:6px">
+        <button class="qb" onclick="prevQ()"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+        <button class="qb" onclick="nextQ()">Next <i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="qb qbd" onclick="clrAns()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="qb qbr" onclick="markRev()"><i class="fa-solid fa-bookmark"></i></button>
+        <button class="qb qbp" onclick="saveNext()">Save &amp; Next</button>
+      </div>
+    </div>
+    <button class="subbtn" onclick="confirmSub()">&#10003; Submit Test</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="pg" id="pg-res">
+  <div class="rhero">
+    <div class="rlbl">Your Score</div>
+    <div class="rscore" id="rscore">0/0</div>
+    <div style="font-size:.85rem;opacity:.7;margin-top:4px" id="racc">0% Accuracy</div>
+    <div class="rstats">
+      <div class="rs"><div class="rsv" style="color:#00c9a7" id="rcor">0</div><div class="rsl">Correct</div></div>
+      <div class="rs"><div class="rsv" style="color:#ef4444" id="rwrg">0</div><div class="rsl">Wrong</div></div>
+      <div class="rs"><div class="rsv" style="color:#f5a623" id="rskp">0</div><div class="rsl">Skipped</div></div>
+    </div>
+  </div>
+  <div class="stitle">&#128221; Answer Analysis</div>
+  <div id="rana"></div>
+  <button class="ebtn" style="margin-top:16px" onclick="goHome()">&#8592; Back to Dashboard</button>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="pg" id="pg-lb">
+  <div class="stitle">&#127942; Leaderboard</div>
+  <div id="lbdiv"></div>
+</div>
+
+<!-- HISTORY -->
+<div class="pg" id="pg-hist">
+  <div class="stitle">&#128203; My Test History</div>
+  <div id="histdiv"></div>
+</div>
+
+<!-- LIVE -->
+<div class="pg" id="pg-live">
+  <button class="bbtn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+  <div id="livecon"></div>
+</div>
+
+<!-- ADMIN -->
+<div class="pg" id="pg-adm">
+  <button class="bbtn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+  <div class="stitle">&#128737; Admin Panel</div>
+
+  <!-- SYNC BOX -->
+  <div class="sbox">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;margin-bottom:14px">&#128202; Sync Questions from Google Sheet</div>
+    <button class="ebtn" onclick="syncSheet()" id="syncbtn">&#128260; Sync Now (One Tap)</button>
+    <div id="syncst" style="font-size:.8rem;margin-top:10px;text-align:center;line-height:1.9"></div>
+    <div style="margin-top:16px;border-top:1px solid var(--bd);padding-top:14px">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;margin-bottom:8px">&#128203; Manual Paste (backup method)</div>
+      <div style="font-size:.73rem;color:var(--mu);line-height:1.8;margin-bottom:8px">
+        Open Google Sheet on laptop &rarr; Ctrl+A &rarr; Ctrl+C &rarr; paste below
+      </div>
+      <textarea id="cpaste" style="width:100%;height:100px;padding:10px;border-radius:10px;border:1.5px solid var(--bd);font-size:.72rem;font-family:monospace;resize:none" placeholder="Paste sheet data here..."></textarea>
+      <button class="ebtn" onclick="importPaste()" style="margin-top:8px">&#128228; Import Pasted Data</button>
+    </div>
+  </div>
+
+  <!-- FIREBASE TEST -->
+  <div style="background:#fffbeb;border:2px solid #f59e0b;border-radius:16px;padding:16px;margin-bottom:16px">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;color:#92400e;margin-bottom:8px">&#128293; Firebase Connection Test</div>
+    <button onclick="testFB()" style="background:#f59e0b;border:none;border-radius:8px;padding:10px 18px;font-weight:700;cursor:pointer;font-size:.82rem;width:100%">Test Firebase Now</button>
+    <div id="fbtest" style="font-size:.78rem;margin-top:8px;text-align:center;line-height:1.8"></div>
+  </div>
+
+  <!-- USERS -->
+  <div class="stitle" style="font-size:.78rem">&#128101; All Users</div>
+  <div class="abox" id="admins"></div>
+</div>
+
+<script>
+/* ─────────── FIREBASE CONFIG ─────────── */
+firebase.initializeApp({
+  apiKey:           "AIzaSyDJ4W7QF726n4ZPjxKkfzZM2NpeC2pA3uQ",
+  authDomain:       "quiz-84166.firebaseapp.com",
+  databaseURL:      "https://quiz-84166-default-rtdb.firebaseio.com",
+  projectId:        "quiz-84166",
+  storageBucket:    "quiz-84166.appspot.com",
+  messagingSenderId:"842779868352",
+  appId:            "1:842779868352:web:81e5dd2f30667932d30125"
+});
+const auth = firebase.auth();
+const db   = firebase.database();
+
+/* ─────────── APP CONFIG ─────────── */
+const ADMIN_EMAIL  = 'vip.sandeep123@gmail.com';
+const ADMIN_PASS   = 'Pasupula@755';
+const APPS_URL     = 'https://script.google.com/macros/s/AKfycbxpyShWPOlQdXOeDKVEGqXt2mlyIO6Ndh7_2dtXa_Grtk5qUGsRG6glgk4ulEhVbFpVSA/exec';
+const LIVE_HOUR    = 9;
+const LIVE_WIN     = 15;
+const LIVE_QN      = 30;
+const LIVE_SEC     = 20 * 60;
+
+/* ─────────── BUILTIN DATA ─────────── */
+const BUILTIN = {
+  husbandry:[{title:"Animal Husbandry 1",questions:[
+    {q:"Bos indicus chromosome number:",o:["48","50","60","64"],a:2,e:"Zebu cattle have 60 chromosomes."},
+    {q:"Which is a milch breed?",o:["Hallikar","Sahiwal","Kangayam","Nagori"],a:1,e:"Sahiwal is the premier dairy breed."},
+    {q:"Sahiwal originated from:",o:["Gujarat","Rajasthan","Pakistan","Haryana"],a:2,e:"Montgomery, Pakistan."},
+    {q:"Milk yield of Sahiwal:",o:["1000 kg","1500 kg","2150 kg","3000 kg"],a:2,e:"2150 kg per lactation."},
+    {q:"Gir breed native to:",o:["Punjab","Gujarat","MP","UP"],a:1,e:"Saurashtra, Gujarat."},
+    {q:"Jersey fat percentage:",o:["3%","4%","5.5%","6.5%"],a:2,e:"5.5%."},
+    {q:"Highest milk breed:",o:["Jersey","Gir","Holstein Friesian","Red Sindhi"],a:2,e:"HF."},
+    {q:"True stomach of ruminant:",o:["Rumen","Reticulum","Omasum","Abomasum"],a:3,e:"Abomasum."},
+    {q:"Largest stomach compartment:",o:["Reticulum","Rumen","Omasum","Abomasum"],a:1,e:"Rumen (80%)."},
+    {q:"Karan Swiss cross:",o:["HF x Gir","Sahiwal x Brown Swiss","Jersey x Sindhi","HF x Tharparkar"],a:1,e:"Sahiwal x Brown Swiss."},
+    {q:"Best draught breed:",o:["Gir","Amritmahal","Sahiwal","Jersey"],a:1,e:"Amritmahal."},
+    {q:"HF fat percentage:",o:["3.5%","4%","5%","6%"],a:0,e:"3.5%."},
+    {q:"HF milk yield:",o:["3000 kg","4000 kg","6000 kg","8000 kg"],a:2,e:"6000 kg."},
+    {q:"Frieswal is:",o:["HF x Sahiwal","Jersey x Gir","Brown Swiss x Sahiwal","HF x Jersey"],a:0,e:"HF x Sahiwal."},
+    {q:"Sheep gestation:",o:["147 days","155 days","210 days","310 days"],a:0,e:"147 days."},
+    {q:"Stag refers to:",o:["Castrated pig","Castrated horse","Castrated goat","Castrated sheep"],a:0,e:"Castrated pig."},
+    {q:"Kankrej horns:",o:["Straight","Lyre-shaped","Spiral","Small"],a:1,e:"Lyre-shaped."},
+    {q:"Best dual-purpose breed:",o:["Ongole","Hariana","Deoni","Dangi"],a:1,e:"Hariana."},
+    {q:"Karan Fries cross:",o:["HF x Gir","HF x Tharparkar","Jersey x Gir","Brown Swiss x Gir"],a:1,e:"Tharparkar x HF."},
+    {q:"Mad cow disease caused by:",o:["Virus","Prions","Bacteria","Protozoa"],a:1,e:"Prions."}
+  ]}],
+  general:[{title:"General Agri 1",questions:[
+    {q:"Miracle rice variety:",o:["IR 8","Jalmagna","TN1","Ponni"],a:0,e:"IR 8."},
+    {q:"Which is a C4 plant?",o:["Wheat","Rice","Sugarcane","Barley"],a:2,e:"Sugarcane."},
+    {q:"Father of Green Revolution India:",o:["Borlaug","Swaminathan","Kurien","BP Pal"],a:1,e:"MS Swaminathan."},
+    {q:"Which is a Rabi crop?",o:["Rice","Maize","Wheat","Cotton"],a:2,e:"Wheat."},
+    {q:"Kharif crop:",o:["Mustard","Barley","Gram","Paddy"],a:3,e:"Paddy."},
+    {q:"Hybrid vigor is called:",o:["Mutation","Heterosis","Inbreeding","Selection"],a:1,e:"Heterosis."},
+    {q:"Biofertilizer:",o:["Urea","DAP","Rhizobium","MOP"],a:2,e:"Rhizobium."},
+    {q:"Bt cotton resistant to:",o:["Aphids","Bollworm","Termites","Whitefly"],a:1,e:"Bollworm."},
+    {q:"Apiculture means:",o:["Fish farming","Bee keeping","Poultry","Sericulture"],a:1,e:"Bee keeping."},
+    {q:"Cash crop:",o:["Rice","Wheat","Cotton","Gram"],a:2,e:"Cotton."},
+    {q:"Gas in photosynthesis:",o:["Oxygen","Nitrogen","CO2","Hydrogen"],a:2,e:"CO2."},
+    {q:"Micronutrient:",o:["Nitrogen","Phosphorus","Potassium","Zinc"],a:3,e:"Zinc."},
+    {q:"Golden rice rich in:",o:["Iron","Zinc","Vitamin A","Protein"],a:2,e:"Vitamin A."},
+    {q:"Operation Flood:",o:["Fish","Milk","Crop","Poultry"],a:1,e:"Milk."},
+    {q:"Edible part of coconut:",o:["Endosperm","Mesocarp","Pericarp","Embryo"],a:0,e:"Endosperm."},
+    {q:"Which is a weed?",o:["Wheat","Rice","Parthenium","Maize"],a:2,e:"Parthenium."},
+    {q:"Oilseed crop:",o:["Wheat","Rice","Mustard","Gram"],a:2,e:"Mustard."},
+    {q:"Fodder crop:",o:["Wheat","Maize","Berseem","Rice"],a:2,e:"Berseem."},
+    {q:"White revolution:",o:["Milk","Wheat","Fish","Oilseeds"],a:0,e:"Milk."},
+    {q:"Vitamin from sunlight:",o:["Vitamin A","Vitamin B","Vitamin C","Vitamin D"],a:3,e:"Vitamin D."}
+  ]}],
+  soil:[{title:"Soil Science 1",questions:[
+    {q:"Optimal pH for crops:",o:["4-5","5-6","6-7","7-8"],a:2,e:"6-7."},
+    {q:"Sandy soil particle size:",o:["<0.002mm","0.002-0.05mm","0.05-2mm","2-4mm"],a:2,e:"0.05-2mm."},
+    {q:"Clay particle size:",o:["<0.002mm","0.002-0.05mm","0.05-2mm","2-4mm"],a:0,e:"<0.002mm."},
+    {q:"CEC highest in:",o:["Sandy","Silt","Clay","Gravel"],a:2,e:"Clay."},
+    {q:"Sodic soil reclaimed by:",o:["Lime","Gypsum","Compost","Urea"],a:1,e:"Gypsum."},
+    {q:"Green manure improves:",o:["Drainage","Organic matter","pH","Texture"],a:1,e:"Organic matter."},
+    {q:"Phosphorus best at pH:",o:["4-5","6-7","7-8","8-9"],a:1,e:"6-7."},
+    {q:"Soil horizon A:",o:["Bedrock","Parent material","Topsoil","Subsoil"],a:2,e:"Topsoil."},
+    {q:"Loss of topsoil:",o:["Percolation","Leaching","Erosion","Saturation"],a:2,e:"Erosion."},
+    {q:"Rhizobium in:",o:["Cereals","Legumes","Oilseeds","Vegetables"],a:1,e:"Legumes."},
+    {q:"DAP contains:",o:["N+P","N+K","P+K","N+P+K"],a:0,e:"N+P."},
+    {q:"Soil health indicator:",o:["High pH","Earthworms","Low OM","Sandy"],a:1,e:"Earthworms."},
+    {q:"Waterlogged soils lack:",o:["Water","Oxygen","Nitrogen","Carbon"],a:1,e:"Oxygen."},
+    {q:"Saline soil pH:",o:["<6","6-7",">7","<5"],a:2,e:">7."},
+    {q:"Loam soil:",o:["Sand+Clay","Sand+Silt+Clay","Silt+Clay","Sand+Gravel"],a:1,e:"Sand+Silt+Clay."},
+    {q:"Pedology studies:",o:["Plants","Soil formation","Water","Animals"],a:1,e:"Soil formation."},
+    {q:"Edaphology studies:",o:["Soil formation","Soil for crops","Soil pH","Erosion"],a:1,e:"Soil for crops."},
+    {q:"Compost is:",o:["Chemical fertilizer","Organic matter","Synthetic","Mineral"],a:1,e:"Organic matter."},
+    {q:"Soil OM improves:",o:["Drainage only","Water holding","Color only","Nothing"],a:1,e:"Water holding."},
+    {q:"Land degradation means:",o:["Improvement","Productivity loss","Augmentation","None"],a:1,e:"Productivity loss."}
+  ]}],
+  horti:[{title:"Horticulture 1",questions:[
+    {q:"Mango family:",o:["Rosaceae","Anacardiaceae","Rutaceae","Moraceae"],a:1,e:"Anacardiaceae."},
+    {q:"Best mango for export:",o:["Alphonso","Totapuri","Langra","Dasheri"],a:0,e:"Alphonso."},
+    {q:"Guava richest in:",o:["Vitamin A","Vitamin B","Vitamin C","Vitamin D"],a:2,e:"Vitamin C."},
+    {q:"Edible part of mango:",o:["Epicarp","Mesocarp","Endocarp","Seed"],a:1,e:"Mesocarp."},
+    {q:"Pineapple propagation:",o:["Seed","Suckers","Cutting","Grafting"],a:1,e:"Suckers."},
+    {q:"Onion family:",o:["Liliaceae","Solanaceae","Cucurbitaceae","Compositae"],a:0,e:"Liliaceae."},
+    {q:"Short-day plant:",o:["Wheat","Onion","Chrysanthemum","Sugarcane"],a:2,e:"Chrysanthemum."},
+    {q:"Coconut water is:",o:["Liquid endosperm","Exosperm","Mesocarp juice","Pericarp"],a:0,e:"Liquid endosperm."},
+    {q:"Apple family:",o:["Anacardiaceae","Rosaceae","Rutaceae","Moraceae"],a:1,e:"Rosaceae."},
+    {q:"Post harvest loss India:",o:["5%","15-30%","50%","60%"],a:1,e:"15-30%."},
+    {q:"T-budding done in:",o:["Mango","Rose","Banana","Papaya"],a:1,e:"Rose."},
+    {q:"Papaya sex:",o:["Monoecious","Dioecious","Polygamous","None"],a:2,e:"Polygamous."},
+    {q:"Drip irrigation best for:",o:["Rice","Wheat","Fruits and veg","Maize"],a:2,e:"Fruits and veg."},
+    {q:"Tomato origin:",o:["India","South America","Africa","China"],a:1,e:"South America."},
+    {q:"Banana inflorescence:",o:["Panicle","Spike","Spadix","Cyme"],a:2,e:"Spadix."},
+    {q:"Litchi family:",o:["Anacardiaceae","Sapindaceae","Rutaceae","Rosaceae"],a:1,e:"Sapindaceae."},
+    {q:"Colchicine used for:",o:["Rooting","Polyploidy","Grafting","Pest control"],a:1,e:"Polyploidy."},
+    {q:"Scion is:",o:["Rootstock","Shoot grafted","Soil","Root"],a:1,e:"Shoot on rootstock."},
+    {q:"Mango order:",o:["Sapindales","Rosales","Myrtales","Poales"],a:0,e:"Sapindales."},
+    {q:"Seedless grape:",o:["Perlette","Anab-e-Shahi","Bangalore Blue","Muscat"],a:0,e:"Perlette."}
+  ]}]
+};
+
+const CATS=[
+  {id:'general',   name:'General Agri',  icon:'fa-microscope',       col:'#0f3460', custom:null},
+  {id:'husbandry', name:'Husbandry',     icon:'fa-cow',              col:'#e94560', custom:null},
+  {id:'soil',      name:'Soil Science',  icon:'fa-flask-vial',       col:'#7c3aed', custom:null},
+  {id:'horti',     name:'Horticulture',  icon:'fa-apple-whole',      col:'#00c9a7', custom:null},
+  {id:'agronomy',  name:'Agronomy',      icon:'fa-seedling',         col:'#f5a623', custom:null},
+  {id:'entomology',name:'Entomology',    icon:'fa-bug',              col:'#ef4444', custom:null},
+  {id:'genetics',  name:'Genetics & PB', icon:'fa-dna',              col:'#3b82f6', custom:null},
+  {id:'eng',       name:'Agri Eng.',     icon:'fa-tractor',          col:'#10b981', custom:null},
+  {id:'prot',      name:'Plant Prot.',   icon:'fa-bug-slash',        col:'#8b5cf6', custom:null},
+  {id:'econ',      name:'Econ & Ext.',   icon:'fa-chart-line',       col:'#06b6d4', custom:null},
+  {id:'minor',     name:'Minor Subjects',icon:'fa-bug',              col:'#d97706', custom:'minor'},
+  {id:'ibps',      name:'IBPS',          icon:'fa-building-columns', col:'#1d4ed8', custom:'ibps'},
+  {id:'special',   name:'THE SPECIAL',   icon:'fa-envelope',         col:'#be185d', custom:'special'}
+];
+
+/* ─────────── STATE ─────────── */
+let CU=null, ISADMIN=false, CUNAME='', EXTRA={};
+let DBLSN=null, LTMR=null;
+let QZ=[],QI=0,QANS={},QTMR=null,QSEC=0,QCAT='',QSET=0,QLIVE=false;
+
+/* ─────────── UTILS ─────────── */
+const G = id => document.getElementById(id);
+function toast(m,d=2500){const t=G('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),d);}
+
+function showPg(id){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  G(id).classList.add('on');
+  window.scrollTo(0,0);
+  ['tb0','tb1','tb2','tb3'].forEach(t=>G(t).classList.remove('on'));
+  ({'pg-dash':'tb0','pg-live':'tb1','pg-lb':'tb2','pg-hist':'tb3'})[id] && G(({'pg-dash':'tb0','pg-live':'tb1','pg-lb':'tb2','pg-hist':'tb3'})[id]).classList.add('on');
+}
+
+function greet(){const h=new Date().getHours();return h<12?'Good Morning \uD83C\uDF05':h<17?'Good Afternoon \u2600\uFE0F':'Good Evening \uD83C\uDF19';}
+function getSets(c){return[...(BUILTIN[c]||[]),...(EXTRA[c]||[])];}
+function allQ(){
+  const pool=[],seen=new Set();
+  [...new Set([...Object.keys(BUILTIN),...Object.keys(EXTRA)])].forEach(c=>{
+    getSets(c).forEach(s=>s.questions.forEach((q,i)=>{
+      const k=c+'|'+s.title+'|'+i;
+      if(!seen.has(k)){seen.add(k);pool.push({...q});}
+    }));
+  });
+  return pool;
+}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+
+/* ─────────── CSV HELPERS ─────────── */
+function csvRow(row){
+  const res=[];let cur='',inQ=false;
+  for(let i=0;i<row.length;i++){
+    if(row[i]==='"'){inQ=!inQ;}
+    else if(row[i]===','&&!inQ){res.push(cur.trim());cur='';}
+    else cur+=row[i];
+  }
+  res.push(cur.trim());return res;
+}
+function cl(s){return(s||'').replace(/^"|"$/g,'').replace(/\r/g,'').trim();}
+function sp(s){return s.replace(/^\d+[.)\s]+/,'').trim();}
+function ai(s){const m=s.match(/^(\d+)/);return m?parseInt(m[1]):0;}
+function sk(s){return s.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');}
+
+function parseCSV(csv){
+  const lines=csv.split(/\r?\n/);
+  const h0=csvRow(lines[0]||'');
+  const start=(cl(h0[0]).toLowerCase().includes('categ')||cl(h0[2]).toLowerCase().includes('quest'))?1:0;
+  const grouped={},cnames={};
+  let lc='',ls='',parsed=0,skipped=0;
+  for(let i=start;i<lines.length;i++){
+    const ln=lines[i];
+    if(!ln||!ln.trim()){skipped++;continue;}
+    const c=csvRow(ln);
+    if(c.length<4){skipped++;continue;}
+    const cr=cl(c[0]),sr=cl(c[1]),qt=cl(c[2]);
+    if(cr){const k=sk(cr);if(k){lc=k;cnames[k]=cr;}}
+    if(sr)ls=sr;
+    if(!qt||!lc||!ls){skipped++;continue;}
+    const o0=sp(cl(c[3]||'')),o1=sp(cl(c[4]||'')),o2=sp(cl(c[5]||'')),o3=sp(cl(c[6]||''));
+    const a=ai(cl(c[7]||'0'));
+    const e=cl((c.length>9?c[9]:c[8])||'');
+    if(!o0){skipped++;continue;}
+    if(!grouped[lc])grouped[lc]={};
+    if(!grouped[lc][ls])grouped[lc][ls]=[];
+    grouped[lc][ls].push({q:qt,o:[o0,o1,o2,o3],a,e});
+    parsed++;
+  }
+  if(parsed===0)throw new Error('No questions found. Check columns: A=Category B=Set C=Question D-G=Options H=Answer');
+  let tq=0,ts=0;const saved=[];
+  for(const[cid,sets]of Object.entries(grouped)){
+    if(!cid)continue;
+    const newSets=Object.entries(sets).map(([t,q])=>({title:t,questions:q}));
+    // MERGE: keep existing sets, update/add new ones from sheet
+    const existing=EXTRA[cid]||[];
+    const merged=[...existing];
+    newSets.forEach(ns=>{
+      const idx=merged.findIndex(s=>s.title===ns.title);
+      if(idx>=0) merged[idx]=ns; else merged.push(ns);
+    });
+    ts+=merged.length;
+    tq+=merged.reduce((s,x)=>s+x.questions.length,0);
+    db.ref('quiz_data/'+cid).set(merged);
+    EXTRA[cid]=merged;
+    saved.push((cnames[cid]||cid)+' ('+merged.length+' sets)');
+  }
+  return{parsed:tq,sets:ts,cats:saved};
+}
+
+/* ─────────── AUTH UI ─────────── */
+function switchTab(t){
+  G('fli').style.display=t==='login'?'block':'none';
+  G('fre').style.display=t==='reg'?'block':'none';
+  G('tli').classList.toggle('on',t==='login');
+  G('tre').classList.toggle('on',t==='reg');
+  G('emsg').style.display='none';
+}
+function showErr(m){G('emsg').textContent=m;G('emsg').style.display='block';}
+
+/* ─────────── AUTH ACTIONS ─────────── */
+async function doLogin(){
+  const email=G('le').value.trim(),pass=G('lp').value;
+  if(!email||!pass){showErr('Please enter email and password.');return;}
+  G('emsg').style.display='none';
+  try{await auth.signInWithEmailAndPassword(email,pass);}
+  catch(e){
+    showErr({'auth/user-not-found':'No account found with this email.','auth/wrong-password':'Incorrect password.','auth/invalid-email':'Invalid email format.','auth/too-many-requests':'Too many attempts. Please wait.'}[e.code]||e.message);
+  }
+}
+
+async function doReg(){
+  const name=G('rn').value.trim(),email=G('re').value.trim(),pass=G('rp').value;
+  if(!name){showErr('Please enter your full name.');return;}
+  if(!email){showErr('Please enter your email.');return;}
+  if(pass.length<6){showErr('Password must be at least 6 characters.');return;}
+  G('emsg').style.display='none';
+  try{
+    const c=await auth.createUserWithEmailAndPassword(email,pass);
+    await db.ref('users/'+c.user.uid).set({name,email,tests:0,totalAcc:0,accuracy:0,best:0,joined:Date.now()});
+  }catch(e){showErr({'auth/email-already-in-use':'This email is already registered.'}[e.code]||e.message);}
+}
+
+function doLogout(){if(confirm('Logout from THE EXAM?'))auth.signOut();}
+
+/* ─────────── AUTH STATE LISTENER ─────────── */
+auth.onAuthStateChanged(async user=>{
+  // Hide loader after auth resolves
+  setTimeout(()=>{const l=G('ldr');if(l){l.classList.add('hide');setTimeout(()=>{l.style.display='none';},600);}},600);
+
+  if(user){
+    CU=user;
+    ISADMIN=(user.email===ADMIN_EMAIL);
+    // HIDE auth page
+    G('auth').classList.add('hidden');
+    // SHOW header + tabs
+    G('hdr').classList.add('show');
+    G('tabs').classList.add('show');
+    // Admin button — ONLY for admin email
+    G('admbtn').style.display = ISADMIN ? 'inline-flex' : 'none';
+    // Load data then dashboard
+    await loadExtra();
+    loadDash();
+    startLiveTmr();
+    showPg('pg-dash');
+    showPops();
+  } else {
+    CU=null;ISADMIN=false;CUNAME='';
+    // SHOW auth page
+    G('auth').classList.remove('hidden');
+    // HIDE header + tabs
+    G('hdr').classList.remove('show');
+    G('tabs').classList.remove('show');
+    if(DBLSN){DBLSN();DBLSN=null;}
+    clearInterval(LTMR);
+    // Reset dashboard page so it's ready
+    showPg('pg-dash');
+  }
+});
+
+/* ─────────── LOAD EXTRA ─────────── */
+function loadExtra(){
+  return new Promise(res=>{
+    db.ref('quiz_data').once('value',snap=>{
+      const d=snap.val();if(d)EXTRA=d;res();
+    }).catch(()=>res());
+  });
+}
+
+/* ─────────── DASHBOARD ─────────── */
+function loadDash(){
+  G('hg').textContent=greet();
+  if(DBLSN){DBLSN();DBLSN=null;}
+  // Realtime listener for stats
+  const ref=db.ref('users/'+CU.uid);
+  const handler=ref.on('value',snap=>{
+    const v=snap.val()||{};
+    CUNAME=v.name||'Student';
+    G('hn').textContent=CUNAME.split(' ')[0];
+    const t=parseInt(v.tests)||0,ta=parseFloat(v.totalAcc)||0;
+    G('stests').textContent=t;
+    G('sacc').textContent=(t>0?Math.round(ta/t):0)+'%';
+    G('sbest').textContent=(parseInt(v.best)||0)+'%';
+  },()=>{});
+  DBLSN=()=>ref.off('value',handler);
+  // Category grid
+  G('cgrid').innerHTML=CATS.map(c=>{
+    const n=getSets(c.id).length;
+    let ico;
+    if(c.custom==='ibps'){
+      ico='<div style="background:#1d4ed8;color:#fff;font-family:Syne,sans-serif;font-weight:800;font-size:.6rem;border-radius:6px;padding:3px 6px;line-height:1.5;text-align:center;letter-spacing:.5px">IBPS<br><span style=\"font-size:.5rem\">BANK</span></div>';
+    } else if(c.custom==='minor'){
+      ico='<span style="font-size:1.1rem;line-height:1">&#128029;&#129447;&#129306;</span>';
+    } else if(c.custom==='special'){
+      ico='<span style="font-size:1.5rem;line-height:1">&#128140;</span>';
+    } else {
+      ico='<i class="fa-solid '+c.icon+'"></i>';
+    }
+    return'<div class="ccard" onclick="openBat(''+c.id+'',''+c.name+'')">'
+      +'<div class="cicon" style="background:'+c.col+'18;color:'+c.col+'">'+ico+'</div>'
+      +'<div class="cname">'+c.name+'</div>'
+      +'<div class="cct">'+n+' set'+(n!==1?'s':'')+'</div></div>';
+  }).join('');
+}
+
+/* ─────────── BATCH ─────────── */
+function openBat(cat,name){
+  QCAT=cat;G('battitle').textContent=name;
+  showPg('pg-bat');
+  G('batlist').innerHTML='<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Loading...</p></div>';
+  // Always fetch fresh from Firebase for this category
+  db.ref('quiz_data/'+cat).once('value').then(function(snap){
+    const d=snap.val(); if(d) EXTRA[cat]=d;
+    renderBat(cat);
+  }).catch(function(){ renderBat(cat); });
+}
+function renderBat(cat){
+  const sets=getSets(cat);
+  if(sets.length===0){
+    G('batlist').innerHTML='<div class="empty"><i class="fa-solid fa-hourglass-half"></i><p>No tests yet.<br>Admin will add questions soon.</p></div>';
+    return;
+  }
+  G('batlist').innerHTML=sets.map(function(s,i){
+    return '<div class="bcard" onclick="startQZ(''+cat+'','+i+',false,null)">'
+      +'<div class="bnum">'+(i+1)+'</div>'
+      +'<div style="flex:1"><div class="btitle">'+s.title+'</div>'
+      +'<div class="bmeta"><span class="badge bg">'+s.questions.length+' Qs</span>&nbsp;<span class="badge bb">15 Min</span></div></div>'
+      +'<i class="fa-solid fa-chevron-right" style="color:var(--mu);font-size:.8rem"></i></div>';
+  }).join('');
+  // Update grid counts
+  G('cgrid')&&G('cgrid').querySelectorAll&&loadDash&&buildGrid();
+}
+
+/* ─────────── QUIZ ENGINE ─────────── */
+function startQZ(cat,idx,live,pool){
+  QLIVE=live;QCAT=cat||'_live';QSET=idx||0;
+  if(live&&pool){QZ=pool;G('qsn').textContent='Daily Live Quiz';}
+  else{
+    const sets=getSets(cat);
+    if(!sets[idx]){toast('Set not found');return;}
+    QZ=sets[idx].questions;G('qsn').textContent=sets[idx].title;
+  }
+  if(!QZ||!QZ.length){toast('No questions found');return;}
+  QI=0;QANS={};QSEC=live?LIVE_SEC:15*60;
+  G('qtmr').classList.remove('warn');
+  showPg('pg-qz');renderQ();buildPal();
+  clearInterval(QTMR);
+  QTMR=setInterval(()=>{
+    QSEC--;
+    const m=Math.floor(QSEC/60),s=QSEC%60;
+    G('qtmr').textContent=m+':'+(s<10?'0'+s:s);
+    if(QSEC<=120)G('qtmr').classList.add('warn');
+    if(QSEC<=0)submitQZ();
+  },1000);
+}
+
+function renderQ(){
+  const q=QZ[QI];
+  G('qlbl').textContent='Q'+(QI+1)+'/'+QZ.length;
+  G('qpf').style.width=((QI+1)/QZ.length*100)+'%';
+  G('qtxt').textContent=q.q;
+  G('qopts').innerHTML=q.o.map((o,i)=>`
+    <div class="opt${QANS[QI]?.a===i?' sel':''}" onclick="pickOpt(${i})">
+      <span class="olt">${'ABCD'[i]}</span>${o}
+    </div>`).join('');
+  document.querySelectorAll('.pn').forEach((n,i)=>n.classList.toggle('cur',i===QI));
+}
+
+function buildPal(){
+  G('qpal').innerHTML=QZ.map((_,i)=>{
+    const s=QANS[i]?.st||'';
+    return`<div class="pn${s?' '+s:''}" onclick="jmpQ(${i})">${i+1}</div>`;
+  }).join('');
+}
+
+function pickOpt(i){QANS[QI]={a:i,st:'ans'};renderQ();buildPal();}
+function jmpQ(i){QI=i;renderQ();}
+function nextQ(){if(QI<QZ.length-1){QI++;renderQ();}}
+function prevQ(){if(QI>0){QI--;renderQ();}}
+function clrAns(){delete QANS[QI];renderQ();buildPal();}
+function markRev(){if(!QANS[QI])QANS[QI]={a:null};QANS[QI].st='rev';buildPal();nextQ();}
+function saveNext(){buildPal();nextQ();}
+function confirmSub(){
+  const done=Object.values(QANS).filter(v=>v.a!=null).length;
+  if(done<QZ.length&&!confirm('You answered '+done+'/'+QZ.length+'. Submit?'))return;
+  submitQZ();
+}
+
+async function submitQZ(){
+  clearInterval(QTMR);QTMR=null;
+  let cor=0,wr=0,sk=0,html='';
+  QZ.forEach((q,i)=>{
+    const u=QANS[i]?.a,ok=(u===q.a);
+    if(u==null)sk++;else if(ok)cor++;else wr++;
+    html+=`<div class="acard${ok?'':' w'}">
+      <div class="aq">Q${i+1}: ${q.q}</div>
+      <div class="ac">&#10003; ${q.o[q.a]}</div>
+      ${u!=null&&!ok?`<div class="am">&#10007; Your answer: ${q.o[u]}</div>`:''}
+      <div class="ae">${q.e||''}</div>
+    </div>`;
+  });
+  const att=cor+wr,acc=att>0?Math.round(cor/att*100):0,total=QZ.length;
+  G('rscore').textContent=cor+'/'+total;G('racc').textContent=acc+'% Accuracy';
+  G('rcor').textContent=cor;G('rwrg').textContent=wr;G('rskp').textContent=sk;
+  G('rana').innerHTML=html;
+  showPg('pg-res');
+
+  // Save stats
+  try{
+    const ref=db.ref('users/'+CU.uid);
+    const snap=await ref.once('value');
+    const d=snap.val()||{};
+    const ot=parseInt(d.tests)||0,ota=parseFloat(d.totalAcc)||0;
+    const nt=ot+1,nta=ota+acc,navg=Math.round(nta/nt),nb=Math.max(parseInt(d.best)||0,acc);
+    await ref.update({tests:nt,totalAcc:nta,accuracy:navg,best:nb});
+    // Instant dashboard update
+    G('stests').textContent=nt;G('sacc').textContent=navg+'%';G('sbest').textContent=nb+'%';
+  }catch(e){console.error('Stats:',e);toast('Stats not saved — check Firebase Rules');}
+
+  // Save history
+  try{
+    const sets=QLIVE?[]:getSets(QCAT);
+    const lbl=QLIVE?'Daily Live Quiz':((sets[QSET]&&sets[QSET].title)||'Quiz');
+    await db.ref('history/'+CU.uid).push({cat:QCAT,setIdx:QSET,setName:lbl,score:cor,total,acc,live:QLIVE,time:Date.now()});
+  }catch(e){console.error('History:',e);}
+}
+
+/* ─────────── LEADERBOARD ─────────── */
+function openLB(){
+  showPg('pg-lb');
+  G('lbdiv').innerHTML='<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Loading...</p></div>';
+  db.ref('users').once('value',snap=>{
+    const list=[];
+    snap.forEach(c=>{
+      const u=c.val();if(!u||!u.name)return;
+      const t=parseInt(u.tests)||0,ta=parseFloat(u.totalAcc)||0;
+      list.push({name:u.name,email:u.email||'',tests:t,avg:t>0?Math.round(ta/t):(parseInt(u.accuracy)||0),best:parseInt(u.best)||0});
+    });
+    if(!list.length){G('lbdiv').innerHTML='<div class="empty"><i class="fa-solid fa-users"></i><p>No users yet.</p></div>';return;}
+    list.sort((a,b)=>b.avg-a.avg);
+    G('lbdiv').innerHTML=list.map((u,i)=>{
+      const me=CU&&u.email===CU.email;
+      const rc=['r1','r2','r3'];
+      const medals=['&#129351;','&#129352;','&#129353;'];
+      return`<div class="lbc${me?' me':''}">
+        <div class="lbr ${rc[i]||'ro'}">${i<3?medals[i]:i+1}</div>
+        <div style="flex:1">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.93rem">${u.name}${me?' <span style="color:#1a1a2e;font-size:.68rem">(You)</span>':''}</div>
+          <div style="font-size:.68rem;color:var(--mu);margin-top:2px">${u.tests} tests &bull; Best: ${u.best}%</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#1a1a2e">${u.avg}%</div>
+          <div style="font-size:.62rem;color:var(--mu)">avg</div>
+        </div>
+      </div>`;
+    }).join('');
+  }).catch(()=>G('lbdiv').innerHTML='<div class="empty"><i class="fa-solid fa-lock"></i><p>Cannot load leaderboard.<br>Check Firebase Rules.</p></div>');
+}
+
+/* ─────────── HISTORY ─────────── */
+function openHist(){
+  showPg('pg-hist');
+  G('histdiv').innerHTML='<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Loading...</p></div>';
+  db.ref('history/'+CU.uid).orderByChild('time').limitToLast(30).once('value',snap=>{
+    if(!snap.exists()){G('histdiv').innerHTML='<div class="empty"><i class="fa-solid fa-clipboard"></i><p>No tests yet.<br>Complete a quiz to see history!</p></div>';return;}
+    const items=[];snap.forEach(c=>{const v=c.val();if(v&&v.time)items.unshift(v);});
+    if(!items.length){G('histdiv').innerHTML='<div class="empty"><i class="fa-solid fa-clipboard"></i><p>No tests yet.</p></div>';return;}
+    G('histdiv').innerHTML=items.map(it=>{
+      const cat=CATS.find(c=>c.id===it.cat)||{icon:'fa-bolt',col:'#1a1a2e'};
+      const d=new Date(it.time);
+      const ds=d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+      const ts=d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+      const pct=parseInt(it.acc)||0;
+      const col=pct>=70?'#00c9a7':pct>=40?'#f5a623':'#ef4444';
+      return`<div class="hc">
+        <div class="hci" style="background:${cat.col}18;color:${cat.col}">
+          <i class="fa-solid ${it.live?'fa-bolt':cat.icon}"></i>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+            ${it.setName||'Quiz'}${it.live?' <span class="badge br">LIVE</span>':''}
+          </div>
+          <div style="font-size:.66rem;color:var(--mu);margin-top:2px">${ds} &bull; ${ts}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:${col}">${pct}%</div>
+          <div style="font-size:.64rem;color:var(--mu)">${it.score||0}/${it.total||0}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }).catch(()=>G('histdiv').innerHTML='<div class="empty"><i class="fa-solid fa-lock"></i><p>Cannot load history.<br>Check Firebase Rules.</p></div>');
+}
+
+/* ─────────── LIVE QUIZ ─────────── */
+function msToLive(){const n=new Date(),t=new Date();t.setHours(LIVE_HOUR,0,0,0);if(n>=t)t.setDate(t.getDate()+1);return t-n;}
+function isLive(){const n=new Date();return n.getHours()===LIVE_HOUR&&n.getMinutes()<LIVE_WIN;}
+function fmtMs(ms){
+  if(ms<=0)return'LIVE!';
+  const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),r=s%60;
+  return h>0?h+'h '+m+'m':String(m).padStart(2,'0')+':'+String(r).padStart(2,'0');
+}
+function startLiveTmr(){
+  clearInterval(LTMR);
+  function tick(){
+    const bar=G('lbar'),cd=G('lcd'),sub=G('lsub');if(!bar)return;
+    if(isLive()){bar.className='lbar on';cd.textContent='JOIN NOW';sub.textContent='\uD83D\uDD34 Live Quiz is ON!';}
+    else{bar.className='lbar';cd.textContent=fmtMs(msToLive());sub.textContent='Daily Quiz at 9:00 AM \u2022 30 Questions';}
+  }
+  tick();LTMR=setInterval(tick,1000);
+}
+function openLive(){
+  showPg('pg-live');
+  const lc=G('livecon');
+  if(isLive()){
+    const pool=shuffle(allQ()).slice(0,LIVE_QN);
+    if(!pool.length){lc.innerHTML='<div class="empty"><i class="fa-solid fa-circle-exclamation"></i><p>No questions yet.<br>Admin must sync the sheet first.</p></div>';return;}
+    window._lp=pool;
+    lc.innerHTML='<div style="background:var(--gd);border-radius:20px;padding:24px;color:#fff;text-align:center;margin-bottom:20px">'
+      +'<div style="font-size:.7rem;opacity:.6;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Today's Live Challenge</div>'
+      +'<div style="font-family:Syne,sans-serif;font-size:2rem;font-weight:800">'+pool.length+' Questions</div>'
+      +'<div style="font-size:.85rem;opacity:.7;margin:6px 0 16px">All subjects mixed &bull; 20 Minutes</div>'
+      +'<span style="background:#e94560;padding:5px 16px;border-radius:20px;font-size:.75rem;font-weight:700">&#128308; LIVE NOW</span>'
+      +'</div>'
+      +'<button class="ebtn" onclick="beginLive(this)">&#9889; Start Live Quiz &rarr;</button>';
+  } else {
+    const ms=msToLive();
+    lc.innerHTML='<div style="background:var(--gd);border-radius:20px;padding:28px;color:#fff;text-align:center;margin-bottom:20px">'
+      +'<div style="font-size:2.5rem;margin-bottom:10px">&#9200;</div>'
+      +'<div style="font-family:Syne,sans-serif;font-size:1.4rem;font-weight:800">Daily Live Quiz</div>'
+      +'<div style="font-family:Syne,sans-serif;font-size:2.2rem;font-weight:800;color:#f5a623;margin:10px 0" id="lpcd">'+fmtMs(ms)+'</div>'
+      +'<div style="font-size:.85rem;opacity:.7">Come back at 9:00 AM!</div>'
+      +'</div>'
+      +'<div style="background:#fff;border-radius:16px;padding:18px;border:1.5px solid var(--bd)">'
+      +'<div style="font-family:Syne,sans-serif;font-weight:700;margin-bottom:10px">&#128203; Rules</div>'
+      +'<div style="font-size:.82rem;color:var(--mu);line-height:2.1">'
+      +'&#8226; '+LIVE_QN+' random questions from ALL subjects<br>'
+      +'&#8226; Fresh questions every day at 9 AM<br>'
+      +'&#8226; 20 minutes to complete<br>'
+      +'&#8226; Score saved to leaderboard<br>'
+      +'&#8226; Only available 9:00 AM &ndash; 9:14 AM'
+      +'</div></div>';
+    const cd=G('lpcd');
+    const t=setInterval(()=>{
+      if(!G('lpcd')){clearInterval(t);return;}
+      if(isLive()){clearInterval(t);openLive();return;}
+      if(cd)cd.textContent=fmtMs(msToLive());
+    },1000);
+  }
+}
+function beginLive(btn){
+  if(btn)btn.disabled=true;
+  startQZ(null,0,true,window._lp||shuffle(allQ()).slice(0,LIVE_QN));
+}
+
+/* ─────────── ADMIN ─────────── */
+function openAdmin(){
+  if(!ISADMIN){toast('Access denied');return;}
+  const k=prompt('Admin Password:');
+  if(k!==ADMIN_PASS){toast('Wrong password');return;}
+  showPg('pg-adm');
+  // Load users
+  db.ref('users').once('value',snap=>{
+    let h='';
+    snap.forEach(c=>{
+      const u=c.val();if(!u||!u.name)return;
+      const t=parseInt(u.tests)||0,ta=parseFloat(u.totalAcc)||0;
+      const avg=t>0?Math.round(ta/t):(parseInt(u.accuracy)||0);
+      h+=`<div class="arow">
+        <div><div style="font-family:'Syne',sans-serif;font-weight:700">${u.name}</div>
+        <div style="font-size:.7rem;color:var(--mu)">${u.email||''}</div></div>
+        <div style="text-align:right">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;color:#1a1a2e">${avg}%</div>
+          <div style="font-size:.62rem;color:var(--mu)">${t} tests &bull; Best ${parseInt(u.best)||0}%</div>
+        </div>
+      </div>`;
+    });
+    G('admins').innerHTML=h||'<div class="arow"><span style="color:var(--mu)">No users yet</span></div>';
+  });
+}
+
+/* ─────────── SHEET SYNC ─────────── */
+async function syncSheet(){
+  if(!ISADMIN){toast('Admin only');return;}
+  const btn=G('syncbtn'),st=G('syncst');
+  btn.disabled=true;btn.textContent='Syncing...';
+  st.innerHTML='<span style="color:var(--mu)">Connecting to Google Sheet...</span>';
+  try{
+    // Direct fetch — Apps Script allows CORS
+    const ctrl=new AbortController();
+    setTimeout(()=>ctrl.abort(),20000);
+    const r=await fetch(APPS_URL,{signal:ctrl.signal,redirect:'follow'});
+    if(!r.ok)throw new Error('HTTP '+r.status+' — check Apps Script deployment');
+    const csv=await r.text();
+    if(!csv||csv.length<20)throw new Error('Empty response from Apps Script');
+    const result=parseCSV(csv);
+    loadDash();
+    st.innerHTML='<span style="color:#00c9a7;font-weight:700">&#10003; '+result.parsed+' questions in '+result.sets+' sets synced!</span><br>'
+      +'<span style="font-size:.74rem;color:var(--mu)">Categories: '+result.cats.join(', ')+'</span>';
+    toast(result.parsed+' questions synced!');
+  }catch(e){
+    console.error('Sync error:',e);
+    st.innerHTML='<span style="color:#ef4444;font-weight:700">&#10007; Sync failed: '+e.message+'</span>'
+      +'<div style="margin-top:8px;font-size:.74rem;color:var(--mu);text-align:left">'
+      +'Use the manual paste method below instead.</div>';
+    toast('Sync failed — use paste method');
+  }finally{
+    btn.disabled=false;btn.innerHTML='&#128260; Sync Now (One Tap)';
+  }
+}
+
+function importPaste(){
+  const raw=(G('cpaste').value||'').trim();
+  if(!raw){toast('Nothing pasted. Copy your sheet data first.');return;}
+  try{
+    const r=parseCSV(raw);
+    G('cpaste').value='';
+    G('syncst').innerHTML='<span style="color:#00c9a7;font-weight:700">&#10003; '+r.parsed+' questions imported!</span><br>'
+      +'<span style="font-size:.74rem;color:var(--mu)">Categories: '+r.cats.join(', ')+'</span>';
+    toast(r.parsed+' questions imported!');
+    loadDash();
+  }catch(e){
+    G('syncst').innerHTML='<span style="color:#ef4444;font-weight:700">&#10007; '+e.message+'</span>';
+    toast('Import failed: '+e.message);
+  }
+}
+
+/* ─────────── FIREBASE TEST ─────────── */
+async function testFB(){
+  const el=G('fbtest');
+  el.innerHTML='<span style="color:var(--mu)"><i class="fa-solid fa-spinner fa-spin"></i> Testing...</span>';
+  const res=[];
+  if(!CU){el.innerHTML='<span style="color:#ef4444">Not logged in</span>';return;}
+  res.push('&#10003; Auth: '+CU.email);
+  try{
+    await db.ref('users/'+CU.uid+'/lastSeen').set(Date.now());
+    res.push('&#10003; Write: OK');
+  }catch(e){
+    res.push('&#10007; Write FAILED: '+e.message);
+    el.innerHTML='<div style="text-align:left;line-height:2">'+res.join('<br>')+'</div>'
+      +'<div style="margin-top:6px;font-size:.74rem;color:#ef4444">Fix Firebase Rules — see below.</div>';
+    return;
+  }
+  try{
+    const s=await db.ref('users/'+CU.uid).once('value');
+    const d=s.val()||{};
+    res.push('&#10003; Read: OK'+(d.name?' (Hello '+d.name+')':''));
+  }catch(e){res.push('&#10007; Read FAILED: '+e.message);}
+  try{
+    await db.ref('history/'+CU.uid+'/_t').set(1);
+    await db.ref('history/'+CU.uid+'/_t').remove();
+    res.push('&#10003; History: OK');
+  }catch(e){res.push('&#10007; History FAILED: '+e.message);}
+  const allOk=res.every(r=>r.includes('&#10003;'));
+  el.innerHTML='<div style="text-align:left;line-height:2;font-size:.78rem">'
+    +'<b style="color:'+(allOk?'#00c9a7':'#ef4444')+'">'+(allOk?'&#10003; All systems working!':'&#9888; Some issues found')+'</b><br>'
+    +res.join('<br>')+'</div>';
+}
+
+
+/* ── POPUPS ── */
+let _popShown=false;
+function showPops(){
+  if(_popShown)return; _popShown=true;
+  setTimeout(function(){G('pop-ig').classList.remove('hide');},1500);
+}
+function nextPop(){
+  G('pop-ig').classList.add('hide');
+  G('pop-tg').classList.remove('hide');
+}
+function closePop(){
+  G('pop-ig').classList.add('hide');
+  G('pop-tg').classList.add('hide');
+}
+/* ─────────── NAV ─────────── */
+function goHome(){
+  if(QTMR&&!confirm('Exit test? Progress will be lost.'))return;
+  clearInterval(QTMR);QTMR=null;QLIVE=false;
+  loadDash();showPg('pg-dash');
+}
+</script>
+
+<!-- POPUP 1: Instagram -->
+<div class="pop-ov hide" id="pop-ig">
+  <div class="pop-card">
+    <div class="pop-icon">&#128248;</div>
+    <div class="pop-title">Follow Us on Instagram!</div>
+    <div class="pop-text">Stay updated with daily agri tips, exam alerts and free content on our page.</div>
+    <a class="pop-go" href="https://www.instagram.com/the_memer_190?igsh=MTNlZTh0aGl0dzN3dw==" target="_blank" onclick="nextPop()" style="background:linear-gradient(135deg,#e1306c,#833ab4)">
+      &#128248; Follow @the_memer_190
+    </a>
+    <button class="pop-skip" onclick="nextPop()">Maybe Later</button>
+  </div>
+</div>
+<!-- POPUP 2: Telegram -->
+<div class="pop-ov hide" id="pop-tg">
+  <div class="pop-card">
+    <div class="pop-icon">&#9992;&#65039;</div>
+    <div class="pop-title">Join Our Telegram!</div>
+    <div class="pop-text">Join thousands of agriculture students. Free study material, mock tests &amp; exam updates daily.</div>
+    <a class="pop-go" href="https://t.me/agri3600" target="_blank" onclick="closePop()" style="background:linear-gradient(135deg,#0088cc,#006699)">
+      &#9992; Join @agri3600 on Telegram
+    </a>
+    <button class="pop-skip" onclick="closePop()">Maybe Later</button>
+  </div>
+</div>
+
+</body>
+</html>
